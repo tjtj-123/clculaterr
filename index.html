@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>메모리 기능 계산기</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+    
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #f0f0f0;
+    }
+    
+    /* 기본: 모든 모드 숨김 */
+    .empty, .vertical, .horizontal { display: none; }
+    
+    /* 360px 이하: empty 메시지 */
+    @media (max-width: 360px) {
+      .empty { display: block; text-align: center; padding: 2rem; }
+    }
+    
+    /* 361px ~ 540px: Vertical 계산기 표시 */
+    @media (min-width: 361px) and (max-width: 540px) {
+      .vertical { display: block !important; }
+    }
+    
+    /* 541px 이상: Horizontal 계산기 표시 */
+    @media (min-width: 541px) {
+      .horizontal { display: block !important; }
+    }
+    
+    /* 공통 스타일 */
+    .calculator {
+      background: #e0e0e0;
+      border: 1px solid #ccc;
+      padding: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .display {
+      width: 100%;
+      background: #fff;
+      border: 1px solid #ccc;
+      text-align: right;
+      padding: 10px;
+      margin-bottom: 8px;
+      font-size: 24px;
+    }
+    
+    button {
+      font-size: 18px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      border-radius: 0;
+    }
+    
+    .gray { background: #d3d3d3; }
+    .yellow { background: #ffcc00; }
+    .white { background: #fff; }
+    
+    /* 가로 계산기 스타일 */
+    .horizontal {
+      width: 450px;
+    }
+    
+    .horizontal .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-gap: 4px;
+    }
+    
+    .horizontal button {
+      height: 50px;
+    }
+    
+    /* 세로 계산기 스타일 */
+    .vertical {
+      width: 300px;
+    }
+    
+    .vertical .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 4px;
+    }
+    
+    .vertical button {
+      height: 50px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 작은 화면용 메시지 -->
+  <div class="empty">
+    화면이 너무 작아용.<br>
+    더 큰 화면에서 사용해주세용.
+  </div>
+  
+  <!-- 가로 버전 계산기 -->
+  <div class="calculator horizontal">
+    <div class="display">0</div>
+    <div class="grid">
+      <!-- 빈칸에 메모리 버튼 추가 -->
+      <button class="gray" onclick="memoryFunc('MC')">MC</button>
+      <button class="gray" onclick="memoryFunc('MR')">MR</button>
+      <button onclick="appendNumber('7')">7</button>
+      <button onclick="appendNumber('8')">8</button>
+      <button onclick="appendNumber('9')">9</button>
+      <button class="yellow" onclick="setOperator('÷')">÷</button>
+      <button class="gray" onclick="setRegister('R2')">R2</button>
+      
+      <button class="gray" onclick="memoryFunc('M-')">M-</button>
+      <button class="gray" onclick="memoryFunc('M+')">M+</button>
+      <button class="white" onclick="appendNumber('4')">4</button>
+      <button class="white" onclick="appendNumber('5')">5</button>
+      <button class="white" onclick="appendNumber('6')">6</button>
+      <button class="yellow" onclick="setOperator('×')">×</button>
+      <button class="gray" onclick="setRegister('R0')">R0</button>
+      
+      <button class="gray" onclick="pi()">π</button>
+      <button class="gray" onclick="square()">x²</button>
+      <button class="white" onclick="appendNumber('1')">1</button>
+      <button class="white" onclick="appendNumber('2')">2</button>
+      <button class="white" onclick="appendNumber('3')">3</button>
+      <button class="yellow" onclick="setOperator('-')">-</button>
+      <button class="yellow" onclick="clearEntry()">CE</button>
+      
+      <button class="gray" onclick="sqrt()">√x</button>
+      <button class="gray" onclick="percent()">%</button>
+      <button class="white" onclick="appendNumber('0')">0</button>
+      <button class="white" onclick="appendNumber('.')">.</button>
+      <button class="white" onclick="toggleSign()">+/-</button>
+      <button class="yellow" onclick="setOperator('+')">+</button>
+      <button class="yellow" onclick="calculate()">=</button>
+    </div>
+  </div>
+  
+  <!-- 세로 버전 계산기 -->
+  <div class="calculator vertical">
+    <div class="display">0</div>
+    <div class="grid">
+      <!-- 메모리 버튼 추가 -->
+      <button class="gray" onclick="memoryFunc('MC')">MC</button>
+      <button class="gray" onclick="memoryFunc('MR')">MR</button>
+      <button class="gray" onclick="memoryFunc('M-')">M-</button>
+      <button class="gray" onclick="memoryFunc('M+')">M+</button>
+      
+      <button class="gray" onclick="clearEntry()">CE</button>
+      <button class="gray" onclick="sqrt()">√x</button>
+      <button class="gray" onclick="percent()">%</button>
+      <button class="yellow" onclick="setOperator('÷')">÷</button>
+      
+      <button class="white" onclick="appendNumber('7')">7</button>
+      <button class="white" onclick="appendNumber('8')">8</button>
+      <button class="white" onclick="appendNumber('9')">9</button>
+      <button class="yellow" onclick="setOperator('×')">×</button>
+      
+      <button class="white" onclick="appendNumber('4')">4</button>
+      <button class="white" onclick="appendNumber('5')">5</button>
+      <button class="white" onclick="appendNumber('6')">6</button>
+      <button class="yellow" onclick="setOperator('-')">-</button>
+      
+      <button class="white" onclick="appendNumber('1')">1</button>
+      <button class="white" onclick="appendNumber('2')">2</button>
+      <button class="white" onclick="appendNumber('3')">3</button>
+      <button class="yellow" onclick="setOperator('+')">+</button>
+      
+      <button class="white" onclick="appendNumber('0')">0</button>
+      <button class="white" onclick="appendNumber('.')">.</button>
+      <button class="white" onclick="toggleSign()">+/-</button>
+      <button class="yellow" onclick="calculate()">=</button>
+      
+      <button class="gray" onclick="pi()">π</button>
+      <button class="gray" onclick="square()">x²</button>
+      <button class="gray" onclick="setRegister('R2')">R2</button>
+      <button class="gray" onclick="setRegister('R0')">R0</button>
+    </div>
+  </div>
+
+  <script>
+    // 상태 변수들
+    let horizontalDisplay = document.querySelector('.horizontal .display');
+    let verticalDisplay = document.querySelector('.vertical .display');
+    let firstNumber = null;
+    let operator = null;
+    let shouldResetDisplay = false;
+    let registers = { 'R0': 0, 'R2': 0 };
+    let memory = 0; // 메모리 저장 변수
+    
+    // 현재 활성화된 디스플레이 가져오기
+    function getActiveDisplay() {
+      if (window.innerWidth <= 360) {
+        return null;
+      } else if (window.innerWidth <= 540) {
+        return verticalDisplay;
+      } else {
+        return horizontalDisplay;
+      }
+    }
+    
+    // 숫자 추가
+    function appendNumber(num) {
+      const display = getActiveDisplay();
+      if (!display) return;
+      
+      if (display.textContent === '0' || shouldResetDisplay) {
+        display.textContent = num;
+        shouldResetDisplay = false;
+      } else if (num === '.' && display.textContent.includes('.')) {
+        // 이미 소수점이 있으면 무시
+        return;
+      } else {
+        display.textContent += num;
+      }
+    }
+    
+    // 연산자 설정
+    function setOperator(op) {
+      const display = getActiveDisplay();
+      if (!display) return;
+      
+      firstNumber = parseFloat(display.textContent);
+      operator = op;
+      shouldResetDisplay = true;
+    }
+    
+    // 계산 실행
+    function calculate() {
+      const display = getActiveDisplay();
+      if (!display || !operator) return;
+      
+      const secondNumber = parseFloat(display.textContent);
+      let result;
+      
+      switch(operator) {
+        case '+':
+          result = firstNumber + secondNumber;
+          break;
+        case '-':
+          result = firstNumber - secondNumber;
+          break;
+        case '×':
+          result = firstNumber * secondNumber;
+          break;
+        case '÷':
+          result = secondNumber !== 0 
+            ? firstNumber / secondNumber 
+            : 'Error';
+          break;
+      }
+      
+      display.textContent = result;
+      firstNumber = null;
+      operator = null;
+      shouldResetDisplay = true;
+    }
+    
+    // 입력 초기화
+    function clearEntry() {
+      const display = getActiveDisplay();
+      if (!display) return;
+      
+      display.textContent = '0';
+      firstNumber = null;
+      operator = null;
+      shouldResetDisplay = false;
+    }
+    
+    // 부호 변경
+    function toggleSign() {
+      const display = getActiveDisplay();
+      if (!display) return;
+      
+      display.textContent = (parseFloat(display.textContent) * -1).toString();
+    }
+    
+    // 퍼센트
+    function percent() {
+      const display = getActiveDisplay();
+      if (!display) return;
+      
+      display.textContent = (parseFloat(display.textContent) / 100).toString();
+    }
+    
+    // 제곱근
+    function sqrt() {
+      const display = getActiveDisplay();
+      if (!display) return;
+      
+      const value = parseFloat(display.textContent);
+      if (value < 0) {
+        display.textContent = 'Error';
+      } else {
+        display.textContent = Math.sqrt(value).toString();
+      }
+      shouldResetDisplay = true;
+    }
+    
+    // 제곱
+    function square() {
+      const display = getActiveDisplay();
+      if (!display) return;
+      
+      const value = parseFloat(display.textContent);
+      display.textContent = (value * value).toString();
+      shouldResetDisplay = true;
+    }
+    
+    // 파이(π)
+    function pi() {
+      const display = getActiveDisplay();
+      if (!display) return;
+      
+      display.textContent = Math.PI.toString();
+      shouldResetDisplay = true;
+    }
+    
+    // 레지스터 설정 (R0, R2)
+    function setRegister(reg) {
+      const display = getActiveDisplay();
+      if (!display) return;
+      
+      if (reg === 'R0' || reg === 'R2') {
+        registers[reg] = parseFloat(display.textContent);
+        display.textContent = registers[reg];
+      }
+    }
+    
+    // 메모리 기능 (MC, MR, M+, M-)
+    function memoryFunc(action) {
+      const display = getActiveDisplay();
+      if (!display) return;
+      
+      const currentValue = parseFloat(display.textContent);
+      
+      switch(action) {
+        case 'MC': // Memory Clear
+          memory = 0;
+          break;
+        case 'MR': // Memory Recall
+          display.textContent = memory.toString();
+          shouldResetDisplay = true;
+          break;
+        case 'M+': // Memory Add
+          memory += currentValue;
+          shouldResetDisplay = true;
+          break;
+        case 'M-': // Memory Subtract
+          memory -= currentValue;
+          shouldResetDisplay = true;
+          break;
+      }
+    }
+    
+    // 화면 크기 변경 시 디스플레이 동기화
+    window.addEventListener('resize', function() {
+      const value = getActiveDisplay()?.textContent || '0';
+      horizontalDisplay.textContent = value;
+      verticalDisplay.textContent = value;
+    });
+  </script>
+</body>
+</html>
